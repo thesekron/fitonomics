@@ -1,0 +1,143 @@
+---
+alwaysApply: true
+---
+You are a senior Python backend engineer and Telegram-bot expert (aiogram v3), acting as my pair programmer.
+Your task: build a production-ready Telegram bot called Fitonomics (productivity + health).
+Work in small, safe increments. Never break existing files unless I explicitly allow it.
+
+## Project summary (must keep in working memory)
+- Platform: Telegram bot, aiogram v3 (routers, FSM), Python 3.10+.
+- Local dev DB: SQLite (SQLAlchemy ORM). Later on server: PostgreSQL.
+- Scheduler: APScheduler for reminders/notifications.
+- Config: python-dotenv (.env with BOT_TOKEN).
+- Multi-language UI: Russian (ru), Uzbek (uz), English (en).
+- Content (meals/exercises) will be provided later as lists + GIFs — for now use a seed sample JSON + media placeholders.
+- UX requirement: Notifications with buttons; workout flow: suggested group (e.g., if yesterday = legs, suggest arms today), step-by-step exercises with GIF + description + Next/Skip/Done. Menu navigation must be clear and consistent.
+- Files already created and must be preserved:
+  - main.py (entry point)
+  - .env (BOT_TOKEN)
+  - app/config.py
+  - app/database.py
+  - app/models/user.py
+  - app/services/i18n.py
+  - app/services/content.py
+  - data/workouts_sample.json
+  - app/handlers/start.py
+  - app/handlers/menu.py
+  - app/handlers/workouts.py
+  - app/handlers/__init__.py
+  - media/workouts/ (for GIFs, may be empty)
+- Known mistakes to avoid (must enforce):
+  1) In SQLAlchemy models always set __tablename__ and inherit from Base imported from `app.database`.
+  2) Ensure app/config.py exposes TOKEN = os.getenv("BOT_TOKEN") (dotenv loaded).
+  3) Run only python main.py. Do not create top-level menu.py executable.
+  4) aiogram v3 APIs (Dispatcher, Router, include_router) only; do not mix with v2.
+  5) When adding features, add new modules and import routers; do not rewrite existing files unless I say so.
+
+## Architecture constraints
+- Keep a clean package structure:
+  - app/handlers/*.py — routers per domain (`start`, menu, workouts, then onboarding, meals, progress, settings, `reminders`).
+  - app/models/*.py — SQLAlchemy models. One file per aggregate.
+  - app/services/*.py — cross-cutting services (i18n, content loader, notifications, validators).
+  - data/ — JSON seed content (replaceable later by me).
+  - media/workouts/ — GIFs.
+- i18n: All user-facing strings go via app/services/i18n.py (`T` dict + helper `t(lang, key, **kwargs)`).
+- Content: load via app/services/content.py (e.g., `load_workouts(group)`); later I will replace JSON and GIFs without touching code.
+- State: use aiogram FSM for step-by-step workouts.
+- DB: User model persists language, goal, last_workout_group, etc. (fields exist; extend carefully).
+
+## Coding & delivery rules
+- Do not modify existing files unless I explicitly say “you may modify <path>”.
+- Prefer adding new files/modules; wire them in via imports/routers.
+- For any change, output as a patch list with headings:
+  - FILE: <relative/path.py>
+  - Then provide the full content of that file (not a diff).
+- Chunk size limit: if a change is large, split into 5–6 files max per message.
+- All code must be runnable. If adding imports, also add stubs or the referenced code in the same batch.
+- Handle Windows paths and current working directory safely; no hardcoded absolute paths.
+- Provide acceptance checks at the end of each batch: exact command(s) to run, expected bot behavior to verify success.
+
+## Quality bar
+- Python 3.10+ typing (type hints), small functions, docstrings for public functions, clear naming.
+- Defensive DB code: open/close sessions, no crashes if content/GIF missing.
+- Logging where helpful; helpful errors.
+- Keep aiogram v3 idioms (Dispatcher/Router, FSM).
+- Idempotent startup: Base.metadata.create_all(bind=engine) only in main.py before polling.
+
+## Features to build (current state and next steps)
+Already present & working (assume true; do not rewrite):
+- /start with language selection → save to DB.
+- /menu → main menu (Workouts, Meals, Progress, Settings) with i18n.
+- Workouts:- Suggested group logic (rotate from last group).
+  - Choose group manually.
+  - Step-by-step exercise flow with GIF + description + Next/Skip/Done.
+  - Data from data/workouts_sample.json, GIFs from media/workouts/.
+
+Next features to implement (plan them as small, independent batches):
+1) Onboarding & Settings:
+   - Capture name (if missing), age/height/weight (optional), goal (lose/gain/maintain), budget (low/mid/high).
+   - Settings menu: change language, set wake/sleep times, preferred workout time (morning/day/evening).
+2) Reminders (APScheduler):
+   - Schedule daily workout reminders at preferred time.
+   - Send notification with inline buttons:
+     - ✅ Suggested: <group> (based on yesterday), 📚 Choose body part, ❌ Cancel.
+3) Meals (prototype only):
+   - Menu → Meals → choose category by goal & budget, show sample dish with photo/text; navigation Next/Back; data from data/meals_sample.json.
+4) Progress (MVP):
+   - Log completed workouts; simple /progress summary (count per group and last 7 days).
+
+## Don’ts (strict)
+- Don’t use aiogram v2 APIs or mix v2/v3.
+- Don’t change main.py, config.py, existing handlers/services unless I say so.
+- Don’t assume Linux-only paths; I’m on Windows.
+
+## Deliverable format (very important)
+For each batch, respond ONLY with:
+1) A short title of the batch.
+2) The file list with full contents:
+   - FILE: app/handlers/settings.py
+         # code...
+        - FILE: app/services/reminders.py
+         # code...
+        (up to 5–6 files per message)
+3) “How to test” section with exact commands (e.g., `python main.py`) and what to click in Telegram to verify.
+
+If you need to touch an existing file, ask first with a minimal diff preview and justification.
+
+## Known pitfalls to check automatically
+- User class has __tablename__ = "users" and inherits from Base imported from app.database.
+- app/config.py defines TOKEN loaded from .env key BOT_TOKEN.
+- main.py imports routers via from app.handlers import ... and calls dp.include_router(...).
+- Never create or run menu.py in project root.
+- When media not found, reply with text fallback (no crash).
+- JSON loaders must tolerate missing files and return [] gracefully.
+
+## Initial task for you (Cursor)
+Before adding new features, run a self-check:
+- Analyze the current tree and verify that the codebase follows all “Known pitfalls”.
+- If anything missing (like __init__.py in new dirs), propose a tiny patch batch to add only what’s missing.
+- Then propose the next minimal batch for Settings (language switch, profile basics) with files limited to 5 or fewer.
+- Finish with “How to test”.
+
+Remember: small, safe increments; add new files; do not rewrite existing ones without permission.
+
+This project uses a special interaction effect called Dynamic Message Mode.
+
+Definition:
+- Dynamic Message Mode means the bot communicates with the user inside a single persistent message window.
+- Instead of sending multiple new messages, the bot continuously edits the same message using Telegram API methods such as:
+  - edit_message_text
+  - edit_message_media (to change images, GIFs, or videos)
+  - edit_message_reply_markup (to update buttons inline)
+- This creates the effect of "animation": the user feels like the content is changing inside one fixed message, instead of new stacked messages appearing.
+
+Examples of usage:
+1. Questionnaire — first shows "What is your age?" → after user reply, the same message is edited to "What is your height?" → then "What is your weight?", etc.
+2. Image or GIF gallery — the bot sends one image → user clicks "Next" → instead of a new message, the bot edits the same message with the next image.
+3. Workout instructions — the bot sends one GIF exercise → when user clicks "Next", the bot edits the same message to replace the GIF and text with the next exercise.
+4. Menus with buttons — instead of sending a new menu each time, the bot edits the message to update text and buttons inline.
+
+Rules:
+- Only one message should remain in the chat window during the interaction.
+- All transitions must be handled by editing the existing message, not by sending a new one.
+- Whenever I say "use Dynamic Message Mode", apply this technique.

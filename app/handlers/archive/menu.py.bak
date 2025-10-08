@@ -1,0 +1,36 @@
+from aiogram import types, F
+from aiogram.filters import Command
+from sqlalchemy.orm import Session
+from app.database import SessionLocal
+from app.models.user import User
+from app.services.i18n import t, T
+from .start import router
+
+def get_lang(user_id: int) -> str:
+    db: Session = SessionLocal()
+    u = db.query(User).filter(User.tg_id == user_id).first()
+    lang = u.language if u and u.language else "ru"
+    db.close()
+    return lang
+
+@router.message(Command("menu"))
+async def show_menu(message: types.Message):
+    lang = get_lang(message.from_user.id)
+    kb = types.ReplyKeyboardMarkup(
+        keyboard=[
+            [types.KeyboardButton(text=t(lang, "btn_workouts")),
+             types.KeyboardButton(text=t(lang, "btn_meals"))],
+            [types.KeyboardButton(text=t(lang, "btn_progress")),
+             types.KeyboardButton(text=t(lang, "btn_settings"))],
+        ],
+        resize_keyboard=True
+    )
+    await message.answer(t(lang, "menu_welcome"), reply_markup=kb)
+
+# Переход в раздел "Тренировки"
+WORKOUTS_BTNS = {T[x]["btn_workouts"] for x in T.keys()}
+
+@router.message(F.text.in_(WORKOUTS_BTNS))
+async def workouts_entry(message: types.Message):
+    from app.handlers.workouts import open_workouts_menu  # импорт внутри, чтобы избежать циклов
+    await open_workouts_menu(message, get_lang(message.from_user.id))

@@ -1,0 +1,66 @@
+{
+  "arms": [
+    {
+      "title_ru": "Отжимания на скамье",
+      "title_uz": "Skamyada dips",
+      "title_en": "Bench dips",
+      "desc_ru": "Опирайся руками на скамью, корпус ближе к краю. 10-12 повторений.",
+      "desc_uz": "Skamyaga qo'llarni qo'yib, tanani pastga tushiring. 10-12 takror.",
+      "desc_en": "Hands on a bench, lower body; 10-12 reps.",
+      "reps": "10-12",
+      "media": "bench_dips.gif"
+    },
+    {
+      "title_ru": "Сгибания рук с бутылками",
+      "title_uz": "Idishlar bilan qo'l bukish",
+      "title_en": "Biceps curls (bottles)",
+      "desc_ru": "Возьми 2 бутылки воды и сгибай руки. 12-15 повторов.",
+      "desc_uz": "2 dona suv idishi bilan qo'llarni buking. 12-15 takror.",
+      "desc_en": "Use two water bottles. 12-15 reps.",
+      "reps": "12-15",
+      "media": "bottle_curls.gif"
+    },
+    {
+      "title_ru": "Отжимания узким хватом",
+      "title_uz": "Tor ushlashda tortilishlar",
+      "title_en": "Close-grip push-ups",
+      "desc_ru": "Локти прижаты, корпус ровно. 8-12 повторов.",
+      "desc_uz": "Tirsaklar tanaga yaqin. 8-12 takror.",
+      "desc_en": "Elbows close to body. 8-12 reps.",
+      "reps": "8-12",
+      "media": "close_pushups.gif"
+    }
+  ],
+  "legs": [
+    {
+      "title_ru": "Приседания",
+      "title_uz": "O‘tirib-turish",
+      "title_en": "Squats",
+      "desc_ru": "Спина ровная, колени не выходят за носки. 12-15 повторов.",
+      "desc_uz": "Belni tik tuting. 12-15 takror.",
+      "desc_en": "Keep back straight. 12-15 reps.",
+      "reps": "12-15",
+      "media": "squats.gif"
+    },
+    {
+      "title_ru": "Выпады",
+      "title_uz": "Oldinga qadam (lunge)",
+      "title_en": "Lunges",
+      "desc_ru": "Шаг вперёд, опускайся до 90°. 10-12 на каждую.",
+      "desc_uz": "Oldinga qadam, tizzani 90°. Har oyog‘iga 10-12.",
+      "desc_en": "Step forward to 90°. 10-12 each leg.",
+      "reps": "10-12 each",
+      "media": "lunges.gif"
+    },
+    {
+      "title_ru": "Плие-приседания",
+      "title_uz": "Plie o‘tirib-turish",
+      "title_en": "Plie squats",
+      "desc_ru": "Широкая стойка, носки наружу. 12-15 повторов.",
+      "desc_uz": "Keng turish, barmoqlar tashqariga. 12-15.",
+      "desc_en": "Wide stance, toes out. 12-15 reps.",
+      "reps": "12-15",
+      "media": "plie.gif"
+    }
+  ]
+}

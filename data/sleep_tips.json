@@ -1,0 +1,501 @@
+[
+  {
+    "ru": "Старайся ложиться спать и вставать в одно и то же время — так твоё тело легче высыпается.",
+    "uz": "Uxlagan va uyg'onish vaqtini bir xil qilib turing — shunda tanangiz osonroq uyquga ketadi.",
+    "en": "Try to go to bed and wake up at the same time — this way your body falls asleep more easily."
+  },
+  {
+    "ru": "За час до сна избегай яркого света и экранов — они мешают выработке мелатонина.",
+    "uz": "Uyqudan bir soat oldin yorqin nur va ekranlardan qoching — ular melatonin ishlab chiqarishga to'sqinlik qiladi.",
+    "en": "Avoid bright light and screens an hour before sleep — they interfere with melatonin production."
+  },
+  {
+    "ru": "Создай расслабляющий вечерний ритуал: чтение, медитация или тёплая ванна.",
+    "uz": "Kechki dam olish marosimini yarating: kitob o'qish, meditatsiya yoki issiq vannada yuvinish.",
+    "en": "Create a relaxing evening ritual: reading, meditation, or a warm bath."
+  },
+  {
+    "ru": "Спальня должна быть прохладной (18-20°C), тёмной и тихой для лучшего сна.",
+    "uz": "Yotoq xonasi salqin (18-20°C), qorong'u va jim bo'lishi kerak — bu yaxshi uyqu uchun.",
+    "en": "The bedroom should be cool (18-20°C), dark and quiet for better sleep."
+  },
+  {
+    "ru": "Не пей кофеин за 6 часов до сна — он может нарушить твой сон.",
+    "uz": "Uyqudan 6 soat oldin kofein ichmang — u uyqunizni buzishi mumkin.",
+    "en": "Don't drink caffeine 6 hours before sleep — it can disrupt your sleep."
+  },
+  {
+    "ru": "Регулярные физические упражнения улучшают качество сна, но не перед сном.",
+    "uz": "Muntazam jismoniy mashqlar uyqu sifatini yaxshilaydi, lekin uyqu oldida emas.",
+    "en": "Regular physical exercise improves sleep quality, but not before bedtime."
+  },
+  {
+    "ru": "Если не можешь заснуть 20 минут — встань и займись чем-то спокойным.",
+    "uz": "Agar 20 daqiqada uxlay olmasangiz — turing va tinch narsa bilan shug'ullaning.",
+    "en": "If you can't fall asleep in 20 minutes — get up and do something calm."
+  },
+  {
+    "ru": "Дневной сон не должен превышать 30 минут и быть до 15:00.",
+    "uz": "Kunduzgi uyqu 30 daqiqadan oshmasligi va 15:00 dan oldin bo'lishi kerak.",
+    "en": "Daytime naps should not exceed 30 minutes and be before 3 PM."
+  },
+  {
+    "ru": "Избегай тяжёлой еды за 3 часа до сна — это может вызвать дискомфорт.",
+    "uz": "Uyqudan 3 soat oldin og'ir ovqatdan qoching — bu noqulaylik keltirib chiqarishi mumkin.",
+    "en": "Avoid heavy meals 3 hours before sleep — this can cause discomfort."
+  },
+  {
+    "ru": "Веди дневник сна, чтобы отслеживать паттерны и улучшения.",
+    "uz": "Uyqu naqshlarini va yaxshilanishlarni kuzatish uchun uyqu kundaligini yuriting.",
+    "en": "Keep a sleep diary to track patterns and improvements."
+  },
+  {
+    "ru": "Тишина ночью важна даже если ты не просыпаешься от звуков.",
+    "uz": "Tun bo‘yi jimlik muhim — hatto tovushlardan uyg'onmasangiz ham.",
+    "en": "Silence at night is important — even if you don’t wake up from noise."
+  },
+  {
+    "ru": "Темнота помогает телу вырабатывать больше мелатонина.",
+    "uz": "Qorong'ulik tana uchun ko'proq melatonin ishlab chiqarishga yordam beradi.",
+    "en": "Darkness helps the body produce more melatonin."
+  },
+  {
+    "ru": "Слишком долгий сон по выходным может сбить внутренние часы.",
+    "uz": "Dam olish kunlari juda ko‘p uxlash biologik soatni buzadi.",
+    "en": "Oversleeping on weekends can disrupt your body clock."
+  },
+  {
+    "ru": "Тёплый душ перед сном помогает быстрее заснуть.",
+    "uz": "Uyqu oldidan issiq dush tezroq uxlatishga yordam beradi.",
+    "en": "A warm shower before bed helps you fall asleep faster."
+  },
+  {
+    "ru": "Хороший сон укрепляет иммунную систему.",
+    "uz": "Yaxshi uyqu immun tizimini mustahkamlaydi.",
+    "en": "Good sleep strengthens the immune system."
+  },
+  {
+    "ru": "Усталость ухудшает способность принимать решения.",
+    "uz": "Charchoq qaror qabul qilish qobiliyatini susaytiradi.",
+    "en": "Fatigue reduces decision-making ability."
+  },
+  {
+"ru": "Фаза REM улучшает креативность и обучаемость.",
+"uz": "REM bosqichi ijodkorlik va o‘rganishni kuchaytiradi.", 
+ "en": "The REM phase improves creativity and learning."
+  },
+  {
+    "ru": "Кошмары чаще возникают при стрессе и недосыпе.",
+    "uz": "Vahimali tushlar ko‘proq stress va uyqusizlikda yuz beradi.",
+    "en": "Nightmares are more common during stress and lack of sleep."
+  },
+  {
+    "ru": "Белый шум может заглушать резкие внешние звуки.",
+    "uz": "Oq shovqin tashqi shovqinlarni bostirishi mumkin.",
+    "en": "White noise can block out sudden external sounds."
+  },
+  {
+    "ru": "Сон помогает мозгу очищаться от токсинов.",
+    "uz": "Uyqu miyani toksinlardan tozalashga yordam beradi.",
+    "en": "Sleep helps the brain cleanse itself of toxins."
+  },
+  {
+    "ru": "Телефонные экраны снижают выработку мелатонина на 50%.",
+    "uz": "Telefon ekranlari melatoninni 50% kamaytiradi.",
+    "en": "Phone screens reduce melatonin production by 50%."
+  },
+  {
+    "ru": "Спать в носках помогает быстрее заснуть.",
+    "uz": "Paypoq bilan uxlash tezroq uxlab qolishga yordam beradi.",
+    "en": "Sleeping in socks helps you fall asleep faster."
+  },
+  {
+    "ru": "Йога перед сном помогает расслабиться.",
+    "uz": "Uyqu oldidan yoga dam olishga yordam beradi.",
+    "en": "Yoga before bed helps you relax."
+  },
+  {
+    "ru": "Сон укрепляет эмоциональный интеллект.",
+    "uz": "Uyqu hissiy aqlni mustahkamlaydi.",
+    "en": "Sleep strengthens emotional intelligence."
+  },
+  {
+    "ru": "Благодарственный дневник помогает уснуть спокойнее.",
+    "uz": "Minnatdorchilik kundaligi tinch uxlab qolishga yordam beradi.",
+    "en": "A gratitude journal helps you fall asleep more peacefully."
+  },
+  {
+    "ru": "Недосып снижает уровень тестостерона у мужчин.",
+    "uz": "Uyqusizlik erkaklardagi testosteron darajasini pasaytiradi.",
+    "en": "Sleep deprivation lowers testosterone levels in men."
+  },
+  {
+    "ru": "Спать в прохладной комнате активирует бурый жир, который сжигает калории.",
+    "uz": "Sovuqqina xonada uxlash kaloriya yoqadigan jigarrang yog'ni faollashtiradi.",
+    "en": "Sleeping in a cool room activates brown fat that burns calories."
+  },
+  {
+    "ru": "Короткий дневной сон улучшает концентрацию и запоминание.",
+    "uz": "Qisqa kunduzgi uyqu diqqat va xotirani yaxshilaydi.",
+    "en": "Short naps improve focus and memory."
+  },
+  {
+    "ru": "Регулярный режим сна увеличивает уровень энергии.",
+    "uz": "Doimiy uyqu rejimi energiya darajasini oshiradi.",
+    "en": "A regular sleep schedule boosts energy levels."
+  },
+  {
+    "ru": "Недосып увеличивает риск развития диабета.",
+    "uz": "Kam uyqu diabet xavfini oshiradi.",
+    "en": "Sleep deprivation increases the risk of diabetes."
+  },
+  {
+    "ru": "Удобная подушка поддерживает шею и улучшает качество сна.",
+    "uz": "Qulay yostiq bo'yinni qo'llab-quvvatlaydi va uyqu sifatini yaxshilaydi.",
+    "en": "A comfortable pillow supports your neck and improves sleep quality."
+  },
+  {
+    "ru": "Чтение книги перед сном помогает расслабиться.",
+    "uz": "Uyqu oldidan kitob o‘qish dam olishga yordam beradi.",
+    "en": "Reading a book before bed helps you relax."
+  },
+  {
+    "ru": "Сон после тренировки ускоряет восстановление мышц.",
+    "uz": "Mashqdan keyingi uyqu mushaklarning tiklanishini tezlashtiradi.",
+    "en": "Sleep after exercise speeds up muscle recovery."
+  },
+  {
+    "ru": "Недостаток сна усиливает тягу к сладкому и вредной еде.",
+    "uz": "Kam uyqu shirinlik va zararli ovqatlarga ishtiyoqni oshiradi.",
+    "en": "Lack of sleep increases cravings for sweets and junk food."
+  },
+  {
+    "ru": "Дети, у которых есть ритуал перед сном, спят лучше.",
+    "uz": "Uyqudan oldingi marosimga ega bolalar yaxshiroq uxlaydi.",
+    "en": "Children with a bedtime ritual sleep better."
+  },
+  {
+    "ru": "Подростки нуждаются в 8–10 часах сна каждую ночь.",
+    "uz": "O'smirlar har kecha 8–10 soat uxlashlari kerak.",
+    "en": "Teenagers need 8–10 hours of sleep every night."
+  },
+  {"ru": "Слишком раннее начало школы нарушает сон подростков.",
+    "uz": "Erta boshlanadigan maktab darslari o‘smirlar uyqusini buzadi.",
+    "en": "Early school start times disrupt teen sleep schedules."
+  },
+  {
+    "ru": "Сон помогает детям лучше учить языки.",
+    "uz": "Uyqu bolalarga tillarni o‘rganishda yordam beradi.",
+    "en": "Sleep helps children learn languages better."
+  },
+  {
+    "ru": "Сон важнее, чем ночная зубрежка перед экзаменом.",
+    "uz": "Imtihondan oldin kechasi uxlamay o‘qishdan ko‘ra uyqu muhimroq.",
+    "en": "Sleep is more important than cramming the night before a test."
+  },
+  {
+    "ru": "Дневной свет помогает пожилым людям сохранять ритмы сна.",
+    "uz": "Kunduzgi quyosh nuri katta yoshlilar uyqu ritmini me’yorda ushlab turadi.",
+    "en": "Daylight helps seniors maintain their sleep rhythm."
+  },
+  {
+    "ru": "Короткий дневной сон полезен для пожилых людей.",
+    "uz": "Katta yoshlilar uchun qisqa kunduzgi uyqu foydalidir.",
+    "en": "Short daytime naps are beneficial for older adults."
+  },
+  {
+    "ru": "Сон улучшает способность запоминать имена и лица.",
+    "uz": "Uyqu ismlar va yuzlarni eslab qolish qobiliyatini yaxshilaydi.",
+    "en": "Sleep improves the ability to remember names and faces."
+  },
+  {
+    "ru": "Сон снижает воспаление в теле.",
+    "uz": "Uyqu tanadagi yallig‘lanishni kamaytiradi.",
+    "en": "Sleep reduces inflammation in the body."
+  },
+  {
+    "ru": "Мозг, который отдыхал, учится в два раза быстрее.",
+    "uz": "Dam olgan miya ikki baravar tez o‘rganadi.",
+    "en": "A rested brain learns twice as fast."
+  },
+  {
+    "ru": "Хороший сон регулирует уровень гормонов стресса.",
+    "uz": "Yaxshi uyqu stress gormonlari darajasini muvozanatlaydi.",
+    "en": "Good sleep regulates stress hormone levels."
+},
+  {
+    "ru": "Сон улучшает способность к принятию решений.",
+    "uz": "Uyqu qaror qabul qilish qobiliyatini yaxshilaydi.",
+    "en": "Sleep improves decision-making ability."
+  },
+  {
+    "ru": "Бессонница делает людей более раздражительными и гневными.",
+    "uz": "Uyqusizlik odamlarni jizzaki va g‘azabli qiladi.",
+    "en": "Insomnia makes people more irritable and angry."
+  },
+  {
+    "ru": "Утяжелённое одеяло снижает тревожность.",
+    "uz": "Og‘ir yopinchiq tashvishlarni kamaytiradi.",
+    "en": "A weighted blanket reduces anxiety."
+  },
+  {
+    "ru": "Красный свет меньше мешает выработке мелатонина ночью.",
+    "uz": "Qizil chiroq kechasi melatonin ishlab chiqarishga kamroq halaqit beradi.",
+    "en": "Red light interferes less with melatonin production at night."
+  },
+  {
+    "ru": "Сон помогает переработать и сбалансировать эмоции.",
+    "uz": "Uyqu hissiyotlarni qayta ishlash va muvozanatlashga yordam beradi.",
+    "en": "Sleep helps process and balance emotions."
+  },
+  {
+    "ru": "Недосып увеличивает риск сердечных заболеваний.",
+    "uz": "Kam uyqu yurak kasalliklari xavfini oshiradi.",
+    "en": "Lack of sleep increases the risk of heart disease."
+  },
+  {
+    "ru": "Хороший сон помогает регулировать аппетит.",
+    "uz": "Yaxshi uyqu ishtahani nazorat qilishga yordam beradi.",
+    "en": "Good sleep helps regulate appetite."
+  },
+  {
+    "ru": "Сон улучшает эмоциональный интеллект.",
+    "uz": "Uyqu hissiy intellektni yaxshilaydi.",
+    "en": "Sleep improves emotional intelligence."
+  },
+  {
+    "ru": "Теплый душ перед сном помогает быстрее заснуть.",
+    "uz": "Uyqudan oldin issiq dush tezroq uxlatishga yordam beradi.",
+    "en": "A warm shower before bed helps you fall asleep faster."
+  },
+  {
+    "ru": "Плохой сон снижает эффективность иммунной системы.",
+    "uz": "Yomon uyqu immunitet tizimini sustlashtiradi.",
+    "en": "Poor sleep weakens the immune system."
+  },
+  {
+    "ru": "Хороший сон укрепляет положительные воспоминания.",
+    "uz": "Yaxshi uyqu ijobiy xotiralarni mustahkamlaydi.",
+    "en": "Good sleep strengthens positive memories."
+  },
+  {
+    "ru": "Медитация помогает телу и разуму подготовиться ко сну.",
+    "uz": "Meditatsiya tana va ongni uyquga tayyorlaydi.",
+    "en": "Meditation helps the body and mind prepare for sleep."
+  },
+  {
+    "ru": "Сон помогает забыть негативные эмоции.",
+    "uz": "Uyqu salbiy hissiyotlarni unutishga yordam beradi.",
+    "en": "Sleep helps forget negative emotions."
+  },
+  {
+    "ru": "Недосып повышает уровень кортизола (гормона стресса).",
+    "uz": "Kam uyqu kortizol (stress gormoni) darajasini oshiradi.",
+    "en": "Sleep deprivation increases cortisol (the stress hormone)."
+  },
+  {
+    "ru": "Переедание на ночь ухудшает качество сна.",
+    "uz": "Kechqurun haddan tashqari ovqatlanish uyqu sifatini yomonlashtiradi.",
+    "en": "Overeating at night worsens sleep quality."
+  },
+  {
+    "ru": "Храп может быть признаком апноэ сна — опасного состояния.",
+    "uz": "Xurrak olish uyqu apnoesi — xavfli holat — belgisi bo‘lishi mumkin.",
+    "en": "Snoring can be a sign of sleep apnea — a dangerous condition."
+  },
+  {
+    "ru": "Сон помогает телу восстанавливаться после болезней.",
+    "uz": "Uyqu tana kasalliklardan tiklanishiga yordam beradi.",
+    "en": "Sleep helps the body recover from illness."
+  },
+  {
+    "ru": "Кошмары чаще снятся при стрессе и недосыпе.",
+    "uz": "Stress va kam uyqu vahimali tushlarga olib keladi.",
+    "en": "Nightmares are more common with stress and lack of sleep."
+  },
+  {
+    "ru": "Сон поддерживает здоровье кожи и предотвращает старение.",
+    "uz": "Uyqu teri salomatligini saqlaydi va qarishni sekinlashtiradi.",
+    "en": "Sleep supports skin health and prevents aging."
+  },
+  {
+    "ru": "Регулярный недосып снижает работоспособность на работе.",
+    "uz": "Doimiy uyqusizlik ish unumdorligini pasaytiradi.",
+    "en": "Chronic sleep deprivation reduces job performance."
+  },
+  {
+    "ru": "Во сне мозг сортирует и укрепляет полученные знания.",
+    "uz": "Uyqu vaqtida miya o‘rganilgan ma’lumotlarni tartiblaydi va mustahkamlaydi.",
+    "en": "During sleep, the brain organizes and strengthens learned information."
+  },
+  {
+    "ru": "Тёмные шторы помогают поддерживать мелатонин ночью.",
+    "uz": "Qorong‘i parda kechasi melatonin ishlab chiqarilishini qo‘llab-quvvatlaydi.",
+    "en": "Dark curtains help maintain melatonin production at night."
+  },
+  {
+    "ru": "Мозг очищает себя от токсинов во время глубокого сна.",
+    "uz": "Miya chuqur uyquda o‘zini toksinlardan tozalaydi.",
+    "en": "The brain cleanses itself of toxins during deep sleep."
+  },
+  {
+    "ru": "Качественный матрас и подушка важны для осанки и сна.",
+    "uz": "Sifatli matras va yostiq holat va uyqu uchun muhimdir.",
+    "en": "A good mattress and pillow are essential for posture and sleep."
+  },
+  {
+    "ru": "Сильный шум ночью повышает уровень тревоги, даже если вы не просыпаетесь.",
+    "uz": "Tunda kuchli shovqin uyg'otmasa ham, tashvish darajasini oshiradi.",
+    "en": "Loud noise at night raises anxiety levels, even if you don't wake up."
+  },
+  {
+    "ru": "Хороший сон помогает легче справляться с трудностями.",
+    "uz": "Yaxshi uyqu muammolarni yengilroq hal qilishga yordam beradi.",
+    "en": "Good sleep helps you cope with challenges more easily."
+  },
+  {
+    "ru": "Сон помогает сбалансировать уровень сахара в крови.",
+    "uz": "Uyqu qondagi shakar miqdorini muvozanatlashga yordam beradi.",
+    "en": "Sleep helps balance blood sugar levels."
+  },
+  {
+    "ru": "Дети, которые высыпаются, лучше учатся и более сосредоточены.",
+    "uz": "Yaxshi uxlaydigan bolalar yaxshiroq o‘qiydi va ko‘proq diqqatli bo‘ladi.",
+    "en": "Well-rested children learn better and are more focused."
+  },
+  {
+    "ru": "Усталость от недосыпа часто маскируется как голод.",
+    "uz": "Uyqusizlikdan charchoq ko‘pincha ochlik sifatida seziladi.",
+    "en": "Sleep-deprived fatigue is often mistaken for hunger."
+  },
+  {
+    "ru": "Хороший сон — это не роскошь, а физиологическая необходимость.",
+    "uz": "Yaxshi uyqu bu hasham emas, balki jismoniy ehtiyojdir.",
+    "en": "Good sleep is not a luxury — it's a biological necessity."
+  },
+  {
+    "ru": "Использование кровати только для сна помогает мозгу ассоциировать её с отдыхом.",
+    "uz": "Yotoq faqat uyqu uchun bo‘lsa, miya uni dam olish bilan bog‘laydi.",
+    "en": "Using the bed only for sleep helps your brain associate it with rest."
+  },
+  {
+    "ru": "Просыпание и засыпание в одно и то же время стабилизирует биоритмы.",
+    "uz": "Bir xil vaqtda uyg‘onish va uxlash biologik ritmlarni barqarorlashtiradi.",
+    "en": "Waking and sleeping at the same time stabilizes your body clock."
+  },
+  {
+    "ru": "Бессонница может быть симптомом других заболеваний.",
+    "uz": "Uyqusizlik boshqa kasalliklarning belgisi bo‘lishi mumkin.",
+    "en": "Insomnia can be a symptom of other medical conditions."
+  },
+  {
+    "ru": "Слишком яркий свет в спальне снижает выработку мелатонина.",
+    "uz": "Yotoqxonadagi juda yorug‘lik melatonin ishlab chiqarilishini kamaytiradi.",
+    "en": "Too much light in the bedroom reduces melatonin production."
+  },
+  {
+    "ru": "Хороший сон улучшает общее настроение и мотивацию.",
+    "uz": "Yaxshi uyqu umumiy kayfiyat va motivatsiyani oshiradi.",
+    "en": "Good sleep improves overall mood and motivation."
+  },
+  {
+    "ru": "Хронический недосып может вызвать когнитивные расстройства.",
+    "uz": "Surunkali uyqusizlik aqliy buzilishlarga olib kelishi mumkin.",
+    "en": "Chronic sleep deprivation can lead to cognitive disorders."
+  },
+  {
+    "ru": "Растения в спальне могут улучшать воздух и помогать расслабиться.",
+    "uz": "Yotoqxona o‘simliklari havoni tozalaydi va tinchlantiradi.",
+    "en": "Plants in the bedroom can purify the air and promote relaxation."
+  },
+  {
+    "ru": "Ложиться спать на голодный желудок может мешать сну.",
+    "uz": "Och qoringa yotish uyquga halal berishi mumkin.",
+    "en": "Going to bed hungry may interfere with sleep."
+  },
+  {
+    "ru": "Негативные мысли перед сном мешают засыпанию.",
+    "uz": "Yotishdan oldin salbiy fikrlar uxlab qolishni qiyinlashtiradi.",
+    "en": "Negative thoughts before bed make it harder to fall asleep."
+  },
+  {
+    "ru": "Занятия на свежем воздухе днём способствуют крепкому сну ночью.",
+    "uz": "Kunduzgi ochiq havoda yurish tunda yaxshi uyquga yordam beradi.",
+    "en": "Outdoor activity during the day promotes better sleep at night."
+  },
+  {
+    "ru": "Прерывистый сон снижает концентрацию и продуктивность.",
+    "uz": "Bo‘lingan uyqu diqqat va unumdorlikni kamaytiradi.",
+    "en": "Interrupted sleep reduces focus and productivity."
+  },
+  {
+    "ru": "Чистое постельное бельё улучшает качество сна и настроение.",
+    "uz": "Toza choyshab uyqu sifatini va kayfiyatni yaxshilaydi.",
+    "en": "Clean bedding improves sleep quality and mood."
+  },
+  {
+    "ru": "Дыхательная техника 4-7-8 помогает быстрее уснуть.",
+    "uz": "4-7-8 nafas mashqi tezroq uxlab qolishga yordam beradi.",
+    "en": "The 4-7-8 breathing technique helps you fall asleep faster."
+  },
+  {
+    "ru": "Гормон роста выделяется в основном во время глубокого сна.",
+    "uz": "O‘sish gormoni asosan chuqur uyquda ajraladi.",
+    "en": "Growth hormone is primarily released during deep sleep."
+  },
+  {
+    "ru": "Тишина ночью способствует восстановлению мозга.",
+    "uz": "Tunda tinchlik miya tiklanishini qo‘llab-quvvatlaydi.",
+    "en": "Silence at night supports brain recovery."
+  },
+  {
+    "ru": "Сон влияет на креативность и способность к решению проблем.",
+    "uz": "Uyqu ijodkorlik va muammolarni hal qilish qobiliyatiga ta’sir qiladi.",
+    "en": "Sleep affects creativity and problem-solving ability."
+  },
+  {
+    "ru": "Усталость из-за недосыпа может ощущаться как тревога.",
+    "uz": "Uyqusizlikdan charchoq xavotirlik kabi sezilishi mumkin.",
+    "en": "Fatigue from lack of sleep can feel like anxiety."
+  },
+  {
+    "ru": "Сон помогает регулировать артериальное давление.",
+    "uz": "Uyqu qon bosimini nazorat qilishga yordam beradi.",
+    "en": "Sleep helps regulate blood pressure."
+  },
+  {
+    "ru": "Отдых в темноте улучшает качество дневного сна.",
+    "uz": "Kunduzgi qorong‘ilik dam olish sifatini oshiradi.",
+    "en": "Darkness improves the quality of daytime naps."
+  },
+  {
+    "ru": "Короткий дневной сон полезен, если не мешает ночному сну.",
+    "uz": "Qisqa kunduzgi uyqu foydali, agar u kechki uyquga halaqit bermasa.",
+    "en": "Short naps are helpful as long as they don't interfere with nighttime sleep."
+  },
+  {
+    "ru": "Качественный сон — самый доступный способ укрепить здоровье.",
+    "uz": "Sifatli uyqu sog‘liqni mustahkamlashning eng arzon usulidir.",
+    "en": "Quality sleep is the most affordable way to boost your health."
+  },
+  {
+    "ru": "Ведение дневника благодарности перед сном улучшает засыпание.",
+    "uz": "Minnatdorchilik kundaligi yozish uyquga ketishni osonlashtiradi.",
+    "en": "Keeping a gratitude journal before bed improves sleep onset."
+  },
+  {
+    "ru": "Сон играет ключевую роль в долголетии и качестве жизни.",
+    "uz": "Uyqu uzoq umr va hayot sifatida muhim rol o‘ynaydi.",
+    "en": "Sleep plays a key role in longevity and quality of life."
+  },
+  {
+    "ru": "Даже одна ночь без сна может повлиять на память и настроение.",
+    "uz": "Atigi bir kecha uxlamaslik ham xotira va kayfiyatga ta’sir qiladi.",
+    "en": "Even one night without sleep can affect memory and mood."
+  },
+  {
+    "ru": "Сон — это основа психического и физического здоровья.",
+    "uz": "Uyqu ruhiy va jismoniy salomatlikning asosi hisoblanadi.",
+    "en": "Sleep is the foundation of both mental and physical health."
+  }
+]
