@@ -71,7 +71,7 @@ def get_progress_stats(user_id: int) -> dict:
         # Get meal stats (last 7 days)
         from app.models.meal_log import MealLog
         meal_logs = session.query(MealLog).filter(
-            MealLog.user_id == user.id,
+            MealLog.user_id == user.tg_id,
             MealLog.created_at >= week_ago
         ).all()
         
@@ -137,7 +137,7 @@ async def show_progress_summary(message: types.Message):
         text += f"😴 {t(lang, 'progress.sleep.title')}:\n"
         text += f"   • {t(lang, 'progress.sleep.avg_duration')}: {sleep['avg_duration']:.1f}h\n"
         text += f"   • {t(lang, 'progress.sleep.optimal_nights')}: {sleep['optimal_nights']}/{sleep['total_nights']}\n"
-        if sleep["electronics_used"] > 0:
+        if sleep.get("electronics_used", 0) > 0:
             text += f"   • {t(lang, 'progress.sleep.electronics')}: {sleep['electronics_used']} {t(lang, 'progress.sleep.nights')}\n"
     else:
         text += f"😴 {t(lang, 'progress.sleep.no_data')}\n"
@@ -150,7 +150,7 @@ async def show_progress_summary(message: types.Message):
     # Meal summary
     meals = stats["meals"]
     text += f"\n🍽️ {t(lang, 'progress.meals.title')}:\n"
-    text += f"   • {t(lang, 'progress.meals.this_week')}: {meals['total_meals']}\n"
+    text += f"   • {t(lang, 'progress.meals.this_week')}: {meals['this_week']}\n"
     text += f"   • {t(lang, 'progress.meals.healthy')}: {meals['healthy']}\n"
     text += f"   • {t(lang, 'progress.meals.unsure')}: {meals['unsure']}\n"
     text += f"   • {t(lang, 'progress.meals.unhealthy')}: {meals['unhealthy']}\n"
@@ -236,18 +236,17 @@ async def show_details(call: types.CallbackQuery):
         text += f"📊 {t(lang, 'progress.details.workouts.summary')}:\n"
         text += f"   • {t(lang, 'progress.details.workouts.this_week')}: {workouts['this_week']}\n"
         text += f"   • {t(lang, 'progress.details.workouts.total')}: {workouts['total']}\n"
-        if workouts["by_group"]:
-            text += f"   • {t(lang, 'progress.details.workouts.by_group')}:\n"
-            for group, count in workouts["by_group"].items():
-                text += f"     - {group}: {count}\n"
+        # Note: by_group data not available in current stats structure
     
     elif detail_type == "meals":
         meals = stats["meals"]
         text += f"📊 {t(lang, 'progress.details.meals.summary')}:\n"
         text += f"   • {t(lang, 'progress.details.meals.this_week')}: {meals['this_week']}\n"
-        text += f"   • {t(lang, 'progress.details.meals.total')}: {meals['total']}\n"
-        if meals["calories_avg"] > 0:
-            text += f"   • {t(lang, 'progress.details.meals.avg_calories')}: {meals['calories_avg']} kcal\n"
+        text += f"   • {t(lang, 'progress.details.meals.healthy')}: {meals['healthy']}\n"
+        text += f"   • {t(lang, 'progress.details.meals.unsure')}: {meals['unsure']}\n"
+        text += f"   • {t(lang, 'progress.details.meals.unhealthy')}: {meals['unhealthy']}\n"
+        text += f"   • {t(lang, 'progress.details.meals.healthiness')}: {meals['healthiness_percentage']}%\n"
+        text += f"   • {t(lang, 'progress.details.meals.custom')}: {meals['custom_meals']}\n"
     
     elif detail_type == "weight":
         user = stats["user"]

@@ -37,7 +37,19 @@ def _back_to_menu_kb(lang: str) -> types.InlineKeyboardMarkup:
 def _profile_edit_kb(lang: str) -> types.InlineKeyboardMarkup:
     """Build profile edit inline keyboard."""
     return types.InlineKeyboardMarkup(inline_keyboard=[
-        [types.InlineKeyboardButton(text=t(lang, "profile.edit"), callback_data="profile:edit:name")]
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit"), callback_data="profile:edit_menu")]
+    ])
+
+
+def _profile_edit_menu_kb(lang: str) -> types.InlineKeyboardMarkup:
+    """Build profile edit menu keyboard with separate buttons for each field."""
+    return types.InlineKeyboardMarkup(inline_keyboard=[
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit_name"), callback_data="profile:edit:name")],
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit_age"), callback_data="profile:edit:age")],
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit_height"), callback_data="profile:edit:height")],
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit_weight"), callback_data="profile:edit:weight")],
+        [types.InlineKeyboardButton(text=t(lang, "profile.edit_budget"), callback_data="profile:edit:budget")],
+        [types.InlineKeyboardButton(text=t(lang, "menu.back"), callback_data="profile:back_to_profile")]
     ])
 
 
@@ -112,6 +124,32 @@ async def show_profile_from_menu(message: types.Message, lang: str, reply_markup
 # inline back removed
 
 
+@router.callback_query(F.data == "profile:edit_menu")
+async def profile_edit_menu(call: types.CallbackQuery):
+    """Show profile edit menu."""
+    lang = get_lang(call.from_user.id)
+    
+    text = f"{t(lang, 'profile.edit_menu_title')}\n\n{t(lang, 'profile.edit_menu_desc')}"
+    
+    await call.message.edit_text(text, reply_markup=_profile_edit_menu_kb(lang))
+    await call.answer()
+
+
+@router.callback_query(F.data == "profile:back_to_profile")
+async def back_to_profile(call: types.CallbackQuery):
+    """Go back to profile view."""
+    lang = get_lang(call.from_user.id)
+    data = get_user_profile_data(call.from_user.id)
+    
+    if not data:
+        await call.message.edit_text(t(lang, "profile.no_data"), reply_markup=_back_to_menu_kb(lang))
+        return
+    
+    text = format_profile_text(lang, data)
+    await call.message.edit_text(text, reply_markup=_profile_edit_kb(lang))
+    await call.answer()
+
+
 @router.callback_query(F.data.startswith("profile:edit:"))
 async def profile_edit_field(call: types.CallbackQuery, state: FSMContext):
     """Start editing a profile field."""
@@ -131,8 +169,14 @@ async def profile_edit_field(call: types.CallbackQuery, state: FSMContext):
         await state.set_state(ProfileEditStates.waiting_for_weight)
         prompt = t(lang, "profile.edit_prompt_weight")
     elif field == "budget":
-        await state.set_state(ProfileEditStates.waiting_for_budget)
-        prompt = t(lang, "profile.edit_prompt_budget")
+        # For budget, show budget selection keyboard instead of text input
+        from app.services.settings import build_budget_kb
+        await call.message.edit_text(
+            t(lang, "profile.edit_prompt_budget"),
+            reply_markup=build_budget_kb(lang).as_markup()
+        )
+        await call.answer()
+        return
     else:
         await call.answer("Field not supported")
         return
@@ -280,3 +324,30 @@ async def profile_save_budget(message: types.Message, state: FSMContext):
     await message.answer(text, reply_markup=_profile_edit_kb(lang))
     
     await state.clear()
+
+
+@router.callback_query(F.data.startswith("budget:"))
+async def profile_pick_budget(call: types.CallbackQuery):
+    """Handle budget selection from profile."""
+    lang = get_lang(call.from_user.id)
+    budget = call.data.split(":", 1)[1]
+    
+    if budget not in ["low", "mid", "high"]:
+        await call.answer("Invalid budget")
+        return
+    
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.tg_id == call.from_user.id).first()
+        if user:
+            user.budget = budget
+            session.commit()
+            
+            # Also sync to UserMealSettings for meals section consistency
+            from app.services.meals import set_user_budget
+            set_user_budget(call.from_user.id, budget)
+    
+    # Show updated profile
+    data = get_user_profile_data(call.from_user.id)
+    text = format_profile_text(lang, data)
+    await call.message.edit_text(text, reply_markup=_profile_edit_kb(lang))
+    await call.answer(t(lang, "profile.budget_saved"))

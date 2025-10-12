@@ -67,7 +67,7 @@ def get_comprehensive_progress_stats(user_id: int, days: int = 7) -> Dict:
         # Meal stats
         meal_logs = session.query(MealLog).filter(
             MealLog.user_id == user_id,
-            MealLog.date >= start_date
+            MealLog.created_at >= start_date
         ).all()
     
     # Process sleep data
@@ -75,7 +75,7 @@ def get_comprehensive_progress_stats(user_id: int, days: int = 7) -> Dict:
         "total_nights": len(sleep_logs),
         "optimal_nights": len([log for log in sleep_logs if 7 <= log.duration_hours <= 9]),
         "avg_duration": sum(log.duration_hours for log in sleep_logs) / len(sleep_logs) if sleep_logs else 0,
-        "electronics_used": len([log for log in sleep_logs if log.electronics_used]),
+        "electronics_used": len([log for log in sleep_logs if hasattr(log, 'electronics_used') and log.electronics_used == "yes"]),
         "avg_quality": sum(log.quality_rating for log in sleep_logs) / len(sleep_logs) if sleep_logs else 0
     }
     

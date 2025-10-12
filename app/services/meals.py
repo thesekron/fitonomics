@@ -11,10 +11,44 @@ from app.models.meal_log import MealLog, UserMealSettings
 from app.models.user import User
 
 
+def _extract_calories_from_text(text_content: str) -> str:
+    """Extract calories from text content."""
+    if not text_content:
+        return 'N/A'
+    
+    try:
+        # Look for "Calories:" pattern in English text
+        for line in text_content.split('\n'):
+            if 'Calories:' in line:
+                calories_text = line.split('Calories:')[1].strip()
+                return calories_text
+        return 'N/A'
+    except Exception as e:
+        print(f"Error extracting calories: {e}")
+        return 'N/A'
+
+
+def _extract_price_from_text(text_content: str) -> str:
+    """Extract price from text content."""
+    if not text_content:
+        return 'N/A'
+    
+    try:
+        # Look for "Price:" pattern in English text
+        for line in text_content.split('\n'):
+            if 'Price:' in line:
+                price_text = line.split('Price:')[1].strip()
+                return price_text
+        return 'N/A'
+    except Exception as e:
+        print(f"Error extracting price: {e}")
+        return 'N/A'
+
+
 def load_meals_data() -> Dict:
     """Load meals data from JSON file."""
     try:
-        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "meals_packs.json")
+        json_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "meals.json")
         with open(json_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except FileNotFoundError:
@@ -58,7 +92,18 @@ def get_meals_by_budget(budget_level: str) -> List[Dict]:
     """Get all meals for a specific budget level."""
     data = load_meals_data()
     budget_key = f"budget_{budget_level}"
-    return data.get(budget_key, [])
+    meals = data.get(budget_key, [])
+    
+    # Add media paths to each meal
+    for meal in meals:
+        category = meal.get("category", "")
+        pack_number = meal.get("pack_number", "")
+        if category and pack_number:
+            # Build media path: media/meals/budget_mid/breakfast/1.png
+            media_filename = f"media/meals/{budget_key}/{category}/{pack_number}.png"
+            meal["image"] = media_filename
+    
+    return meals
 
 
 def get_meals_by_category(budget_level: str, category: str) -> List[Dict]:
@@ -85,15 +130,19 @@ def log_meal_pack(user_id: int, pack_id: str, meal_type: str) -> None:
     if not meal_data:
         return
     
+    # Extract calories and price from text
+    calories_text = _extract_calories_from_text(meal_data.get('text_en', ''))
+    price_text = _extract_price_from_text(meal_data.get('text_en', ''))
+    
     with SessionLocal() as session:
         meal_log = MealLog(
             user_id=user_id,
             meal_type=meal_type,
             is_pack=True,
             pack_id=pack_id,
-            pack_name=meal_data.get("name"),
-            calories=meal_data.get("calories"),
-            price=meal_data.get("price"),
+            pack_name=meal_data.get("name_en"),  # Use English name as default
+            calories=calories_text,
+            price=price_text,
             prep_time=meal_data.get("prep_time_min"),
             flags=meal_data.get("flags")
         )

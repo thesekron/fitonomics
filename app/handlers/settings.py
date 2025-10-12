@@ -297,40 +297,6 @@ async def pick_budget(call: CallbackQuery, state: FSMContext) -> None:
     await call.answer()
 
 
-@router.callback_query(F.data == "settings:budget")
-async def settings_budget(call: CallbackQuery) -> None:
-    """Handle budget change from settings."""
-    with SessionLocal() as session:
-        user = session.query(User).filter(User.tg_id == call.from_user.id).first()
-        lang = (user.language or "ru") if user else "ru"
-    
-    await call.message.edit_text(
-        t(lang, "meals.choose_budget"),
-        reply_markup=build_budget_kb(lang).as_markup(),
-    )
-    await call.answer()
-
-
-@router.callback_query(F.data.startswith("budget:"))
-async def pick_budget(call: CallbackQuery) -> None:
-    """Handle budget selection from settings."""
-    budget = call.data.split(":", 1)[1]
-    
-    # Save budget preference
-    from app.services.meals import set_user_budget
-    set_user_budget(call.from_user.id, budget)
-    
-    with SessionLocal() as session:
-        user = session.query(User).filter(User.tg_id == call.from_user.id).first()
-        lang = (user.language or "ru") if user else "ru"
-    
-    await call.message.edit_text(
-        t(lang, "meals.budget.saved", budget=t(lang, f"meals.budget.{budget}")),
-        reply_markup=build_settings_menu_kb(lang).as_markup(),
-    )
-    await call.answer()
-
-
 @router.callback_query(F.data == "settings:reminder")
 async def settings_reminder(call: CallbackQuery) -> None:
     with SessionLocal() as session:

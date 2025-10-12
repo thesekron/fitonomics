@@ -11,7 +11,6 @@ from app.services.i18n import t
 def build_settings_menu_kb(lang: str) -> InlineKeyboardBuilder:
     kb = InlineKeyboardBuilder()
     kb.button(text=t(lang, "btn_change_language"), callback_data="settings:lang")
-    kb.button(text=t(lang, "meals.change_budget"), callback_data="settings:budget")
     kb.adjust(1)
     return kb
 

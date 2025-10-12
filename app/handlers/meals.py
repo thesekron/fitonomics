@@ -4,12 +4,13 @@ Meals handlers - complete meal tracking system.
 from aiogram import F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, InputMediaPhoto, FSInputFile
 
 from app.services.i18n import t
 from app.services.meals import (
     get_user_budget, set_user_budget, get_meals_by_category, 
-    get_meal_by_id, log_meal_pack, log_custom_meal, get_meal_stats
+    get_meal_by_id, log_meal_pack, log_custom_meal, get_meal_stats,
+    _extract_calories_from_text, _extract_price_from_text
 )
 from app.database import SessionLocal
 from app.models.user import User
@@ -21,6 +22,51 @@ def get_lang(user_id: int) -> str:
     with SessionLocal() as session:
         user = session.query(User).filter(User.tg_id == user_id).first()
         return user.language if user and user.language else "ru"
+
+
+def extract_calories_from_text(pack: dict) -> str:
+    """Extract calories from meal text content."""
+    try:
+        text_content = pack.get('text_en', '')
+        if 'Calories:' in text_content:
+            # Find the line with calories
+            for line in text_content.split('\n'):
+                if 'Calories:' in line:
+                    # Extract everything after "Calories:"
+                    calories_text = line.split('Calories:')[1].strip()
+                    return calories_text
+        return 'N/A'
+    except Exception as e:
+        print(f"Error extracting calories: {e}")
+        return 'N/A'
+
+
+def extract_price_from_text(pack: dict) -> str:
+    """Extract price from meal text content."""
+    try:
+        text_content = pack.get('text_en', '')
+        if 'Price:' in text_content:
+            # Find the line with price
+            for line in text_content.split('\n'):
+                if 'Price:' in line:
+                    # Extract everything after "Price:"
+                    price_text = line.split('Price:')[1].strip()
+                    return price_text
+        return 'N/A'
+    except Exception as e:
+        print(f"Error extracting price: {e}")
+        return 'N/A'
+
+
+def get_localized_name(pack: dict, lang: str) -> str:
+    """Get localized meal name based on user language."""
+    try:
+        name_key = f"name_{lang}" if f"name_{lang}" in pack else "name_en"
+        name = pack.get(name_key, pack.get("name_en", "Unknown"))
+        return name
+    except Exception as e:
+        print(f"Error getting localized name: {e}")
+        return "Unknown"
 
 
 class MealStates(StatesGroup):
@@ -46,16 +92,16 @@ def _build_category_kb(lang: str) -> InlineKeyboardMarkup:
     ])
 
 
-def _build_pack_grid_kb(packs: list, lang: str, page: int = 0, packs_per_page: int = 6) -> InlineKeyboardMarkup:
+def _build_pack_grid_kb(packs: list, lang: str, page: int = 0, packs_per_page: int = 10) -> InlineKeyboardMarkup:
     """Build pack grid keyboard with pagination."""
     start_idx = page * packs_per_page
     end_idx = start_idx + packs_per_page
     page_packs = packs[start_idx:end_idx]
     
     buttons = []
-    for i in range(0, len(page_packs), 2):
+    for i in range(0, len(page_packs), 5):
         row = []
-        for j in range(2):
+        for j in range(5):
             if i + j < len(page_packs):
                 pack = page_packs[i + j]
                 row.append(InlineKeyboardButton(
@@ -118,6 +164,8 @@ def _build_back_to_menu_kb(lang: str) -> InlineKeyboardMarkup:
     ])
 
 
+
+
 async def open_meals_menu(message: types.Message, lang: str, reply_markup=None):
     """Open meals menu - called from main menu."""
     if reply_markup:
@@ -141,11 +189,8 @@ async def select_category(call: types.CallbackQuery, state: FSMContext):
     category = call.data.split(":")[2]
     
     if category == "custom":
-        # Start custom meal flow - ask what they ate directly
-        await state.update_data(custom_category="breakfast")  # Default category
-        await state.set_state(MealStates.waiting_for_custom_description)
-        
-        text = t(lang, "meals.custom.what_ate")
+        # Show custom meal category selection
+        text = f"{t(lang, 'meals.custom.category')}\n\n{t(lang, 'meals.choose_category')}"
         
         # Delete the previous message and send new one
         try:
@@ -153,9 +198,7 @@ async def select_category(call: types.CallbackQuery, state: FSMContext):
         except:
             pass
         
-        await call.message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=t(lang, "menu.back"), callback_data="meals:back_to_categories")]
-        ]))
+        await call.message.answer(text, reply_markup=_build_custom_meal_kb(lang))
         return
     
     # Get user's budget (should always be set during onboarding)
@@ -227,25 +270,37 @@ async def show_pack_detail(call: types.CallbackQuery):
         await call.answer(t(lang, "meals.pack_not_found"))
         return
     
-    # Build pack detail text
-    text = f"📦 {t(lang, 'meals.pack')} {pack['pack_number']}: {pack['name']}\n"
-    text += f"✨ {pack['short_desc']}\n"
-    text += f"📌 {t(lang, 'meals.ingredients')}: {pack['ingredients']}\n"
-    text += f"💰 {t(lang, 'meals.price')}: ~{pack['price']} {pack['currency']}\n"
-    text += f"🔥 {t(lang, 'meals.calories')}: ~{pack['calories']} kcal\n"
-    text += f"✅ {t(lang, 'meals.tags')}: {pack['flags']}\n"
-    text += f"🕒 {t(lang, 'meals.prep_time')}: {pack['prep_time_min']} min\n"
-    text += f"💡 {pack['notes']}"
+    # Get localized name and text
+    name_key = f"name_{lang}" if lang in ['en', 'ru', 'uz'] else "name_en"
+    text_key = f"text_{lang}" if lang in ['en', 'ru', 'uz'] else "text_en"
     
-    # Send photo if available
+    name = pack.get(name_key, pack.get("name_en", "Unknown"))
+    description = pack.get(text_key, pack.get("text_en", ""))
+    
+    # Build pack detail text
+    text = f"📦 {t(lang, 'meals.pack')} {pack['pack_number']}: {name}\n\n"
+    text += description
+    
+    # Delete the previous message and send new one with pack details
+    try:
+        await call.message.delete()
+    except:
+        pass  # Ignore if deletion fails
+    
+    # Send new message with pack details
     if pack.get('image'):
+
         try:
+            # Create FSInputFile for local image
+            image_path = pack['image']
+            photo = FSInputFile(image_path)
             await call.message.answer_photo(
-                photo=pack['image'],
+                photo=photo,
                 caption=text,
                 reply_markup=_build_pack_detail_kb(pack_id, lang)
             )
-        except:
+        except Exception as e:
+            print(f"Error sending photo: {e}")
             # Fallback to text if image fails
             await call.message.answer(
                 text,
@@ -261,24 +316,52 @@ async def show_pack_detail(call: types.CallbackQuery):
 @router.callback_query(F.data.startswith("meals:done:"))
 async def mark_meal_done(call: types.CallbackQuery):
     """Mark meal as done."""
-    lang = get_lang(call.from_user.id)
-    pack_id = call.data.split(":")[2]
-    
-    pack = get_meal_by_id(pack_id)
-    if not pack:
-        await call.answer(t(lang, "meals.pack_not_found"))
-        return
-    
-    # Log the meal
-    log_meal_pack(call.from_user.id, pack_id, pack['category'])
-    
-    # Show confirmation
-    text = f"✅ {t(lang, 'meals.logged')}\n\n"
-    text += f"📦 {pack['name']}\n"
-    text += f"🔥 {pack['calories']} kcal\n"
-    text += f"💰 {pack['price']} {pack['currency']}"
-    
-    await call.message.answer(text, reply_markup=_build_back_to_menu_kb(lang))
+    try:
+        lang = get_lang(call.from_user.id)
+        pack_id = call.data.split(":")[2]
+        
+        pack = get_meal_by_id(pack_id)
+        if not pack:
+            await call.answer(t(lang, "meals.pack_not_found"))
+            return
+        
+        # Log the meal
+        try:
+            log_meal_pack(call.from_user.id, pack_id, pack.get('category', 'unknown'))
+        except Exception as e:
+            print(f"Error logging meal: {e}")
+            # Continue anyway, don't fail the whole operation
+        
+        # Show confirmation
+        text = f"✅ {t(lang, 'meals.logged')}\n\n"
+        
+        # Get localized name
+        name = get_localized_name(pack, lang)
+        
+        # Extract calories and price from text
+        calories_text = extract_calories_from_text(pack)
+        price_text = extract_price_from_text(pack)
+        
+        text += f"📦 {name}\n"
+        text += f"🔥 {calories_text}"
+        text += f"\n💰 {price_text}"
+        
+        # Delete the old message with buttons and send new confirmation
+        try:
+            await call.message.delete()
+        except Exception as e:
+            print(f"Error deleting message: {e}")
+            # Continue anyway
+        
+        await call.message.answer(text, reply_markup=_build_back_to_menu_kb(lang))
+        
+    except Exception as e:
+        print(f"Error in mark_meal_done: {e}")
+        lang = get_lang(call.from_user.id) if 'lang' not in locals() else "ru"
+        await call.message.answer(
+            f"❌ {t(lang, 'meals.error.missing_data')}",
+            reply_markup=_build_back_to_menu_kb(lang)
+        )
 
 
 @router.callback_query(F.data.startswith("meals:custom_category:"))
@@ -293,9 +376,9 @@ async def select_custom_category(call: types.CallbackQuery, state: FSMContext):
     text = t(lang, "meals.custom.what_ate")
     
     if call.message.text:
-        await call.message.edit_text(text, reply_markup=_build_back_to_menu_kb(lang))
+        await call.message.edit_text(text)  # No buttons, just text
     else:
-        await call.message.answer(text, reply_markup=_build_back_to_menu_kb(lang))
+        await call.message.answer(text)  # No buttons, just text
 
 
 @router.message(MealStates.waiting_for_custom_description)
@@ -310,6 +393,27 @@ async def process_custom_description(message: types.Message, state: FSMContext):
     text += f"🍎 {t(lang, 'meals.health.healthy')}\n"
     text += f"😐 {t(lang, 'meals.health.normal')}\n"
     text += f"🍔 {t(lang, 'meals.health.unhealthy')}"
+    
+    # Delete user's message and try to delete recent bot messages
+    try:
+        # Delete user's message
+        await message.delete()
+        
+        # Try to delete the last few messages from bot (in case the question message is still there)
+        # We'll try to delete messages with IDs close to the user's message
+        for i in range(1, 4):  # Try to delete 3 previous messages
+            try:
+                await message.bot.delete_message(
+                    chat_id=message.chat.id, 
+                    message_id=message.message_id - i
+                )
+            except:
+                # If we can't delete a message, just continue
+                pass
+    except Exception as e:
+        # Log error for debugging but don't fail
+        print(f"Error deleting messages: {e}")
+        pass
     
     await message.answer(text, reply_markup=_build_health_rating_kb(lang))
 
@@ -336,6 +440,12 @@ async def process_health_rating(call: types.CallbackQuery, state: FSMContext):
     text += f"🍽️ {custom_description}\n"
     text += f"📅 {t(lang, 'meals.category.' + custom_category)}\n"
     text += f"💚 {t(lang, 'meals.health.' + health_rating)}"
+    
+    # Delete the previous message and send new one
+    try:
+        await call.message.delete()
+    except:
+        pass  # Ignore if deletion fails
     
     await call.message.answer(text, reply_markup=_build_back_to_menu_kb(lang))
     
@@ -380,6 +490,8 @@ async def back_to_packs(call: types.CallbackQuery):
 @router.callback_query(F.data == "meals:back_to_menu")
 async def back_to_menu(call: types.CallbackQuery):
     """Go back to main menu."""
+    from .menu import build_main_menu_kb
+    
     lang = get_lang(call.from_user.id)
     # Delete current message
     try:
@@ -387,8 +499,9 @@ async def back_to_menu(call: types.CallbackQuery):
     except:
         pass
     
-    text = f"{t(lang, 'meals.title')}\n\n{t(lang, 'meals.choose_category')}"
-    await call.message.answer(text, reply_markup=_build_category_kb(lang))
+    # Return to main menu with ReplyKeyboard
+    kb = build_main_menu_kb(lang)
+    await call.message.answer(t(lang, "menu.welcome"), reply_markup=kb)
 
 
 # Meal reminder handlers
@@ -441,7 +554,7 @@ async def quick_pack_selection(call: types.CallbackQuery):
     text = f"{t(lang, 'meals.reminder.quick_select')}\n\n"
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"📦 {pack['pack_number']}: {pack['name']}", callback_data=f"meals:quick_done:{pack['id']}")]
+        [InlineKeyboardButton(text=f"📦 {pack['pack_number']}: {pack.get(f'name_{lang}', pack.get('name_en', 'Unknown'))}", callback_data=f"meals:quick_done:{pack['id']}")]
         for pack in quick_packs
     ] + [[InlineKeyboardButton(text=t(lang, "menu.back"), callback_data=f"meals:reminder:{meal_type}")]])
     
@@ -454,23 +567,47 @@ async def quick_pack_selection(call: types.CallbackQuery):
 @router.callback_query(F.data.startswith("meals:quick_done:"))
 async def quick_pack_done(call: types.CallbackQuery):
     """Mark pack as done from reminder."""
-    lang = get_lang(call.from_user.id)
-    pack_id = call.data.split(":")[2]
-    
-    pack = get_meal_by_id(pack_id)
-    if not pack:
-        await call.answer(t(lang, "meals.pack_not_found"))
-        return
-    
-    # Log the meal
-    log_meal_pack(call.from_user.id, pack_id, pack['category'])
-    
-    # Show confirmation
-    text = f"✅ {t(lang, 'meals.reminder.logged')}\n\n"
-    text += f"📦 {pack['name']}\n"
-    text += f"🔥 {pack['calories']} kcal"
-    
-    await call.message.answer(text)
+    try:
+        lang = get_lang(call.from_user.id)
+        pack_id = call.data.split(":")[2]
+        
+        pack = get_meal_by_id(pack_id)
+        if not pack:
+            await call.answer(t(lang, "meals.pack_not_found"))
+            return
+        
+        # Log the meal
+        try:
+            log_meal_pack(call.from_user.id, pack_id, pack.get('category', 'unknown'))
+        except Exception as e:
+            print(f"Error logging meal in reminder: {e}")
+            # Continue anyway
+        
+        # Show confirmation
+        text = f"✅ {t(lang, 'meals.reminder.logged')}\n\n"
+        
+        # Get localized name
+        name = get_localized_name(pack, lang)
+        
+        # Extract calories from text
+        calories_text = extract_calories_from_text(pack)
+        
+        text += f"📦 {name}\n"
+        text += f"🔥 {calories_text}"
+        
+        # Delete the old message with buttons and send new confirmation
+        try:
+            await call.message.delete()
+        except Exception as e:
+            print(f"Error deleting message in reminder: {e}")
+            # Continue anyway
+        
+        await call.message.answer(text)
+        
+    except Exception as e:
+        print(f"Error in quick_pack_done: {e}")
+        lang = get_lang(call.from_user.id) if 'lang' not in locals() else "ru"
+        await call.message.answer(f"❌ {t(lang, 'meals.error.missing_data')}")
 
 
 @router.callback_query(F.data.startswith("meals:quick_custom:"))

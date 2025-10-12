@@ -30,8 +30,8 @@ class MealLog(Base):
     health_rating = Column(String(10), nullable=True)  # 'healthy', 'normal', 'unhealthy'
     
     # Pack details (for packs)
-    calories = Column(Integer, nullable=True)
-    price = Column(Float, nullable=True)
+    calories = Column(String(50), nullable=True)  # Store as text like "~350 kcal"
+    price = Column(String(50), nullable=True)  # Store as text like "~8,000 UZS"
     prep_time = Column(Integer, nullable=True)  # in minutes
     flags = Column(String(200), nullable=True)  # tags from pack
     
