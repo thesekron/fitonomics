@@ -14,4 +14,5 @@ from . import sleep      # сон и статистика
 from . import reminders  # напоминания
 from . import help       # помощь
 from . import profile    # профиль пользователя
+from . import admin      # админка
 # позже добавим onboarding, meals, progress — без изменения main.py

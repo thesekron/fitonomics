@@ -50,10 +50,7 @@ class UserMealSettings(Base):
     # Budget preference
     budget_level = Column(String(10), nullable=False, default="mid")  # 'low', 'mid', 'high'
     
-    # Notification settings
-    breakfast_reminder = Column(Boolean, default=False, nullable=False)
-    lunch_reminder = Column(Boolean, default=False, nullable=False)
-    dinner_reminder = Column(Boolean, default=False, nullable=False)
+    # Old notification settings removed - now handled by new reminder system
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -5,7 +5,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from app.config import TOKEN
 from app.database import Base, engine
-from app.models import user  # регистрируем модель
+from app.models import user, admin, notification_log  # регистрируем модели
 from app.handlers import start  # общий router создаётся и используется всеми хендлерами
 from app.services.reminders import load_and_schedule_all, start_scheduler, set_bot_instance
 

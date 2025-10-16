@@ -4,5 +4,7 @@ APScheduler==3.11.0
 python-dotenv==1.1.1
 SQLAlchemy==2.0.43
 tzlocal==5.3.1
+nest_asyncio==1.6.0
+requests==2.31.0
 
 

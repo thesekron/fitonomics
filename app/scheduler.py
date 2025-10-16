@@ -1,7 +1,7 @@
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from app.services.reminders import schedule_sleep_reminders
+from app.services.reminders import schedule_sleep_notifications
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def start_scheduler():
         scheduler = AsyncIOScheduler()
     
     # Schedule sleep reminders
-    schedule_sleep_reminders(scheduler)
+    schedule_sleep_notifications(scheduler)
     
     scheduler.start()
     logger.info("Scheduler started successfully")

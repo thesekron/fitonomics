@@ -14,6 +14,9 @@ class UserSettings(Base):
     wake_time = Column(String, nullable=True)   # HH:MM
     sleep_time = Column(String, nullable=True)  # HH:MM
     workout_pref = Column(String, nullable=True)  # morning/day/evening
+    breakfast_time = Column(String, nullable=True)  # HH:MM
+    lunch_time = Column(String, nullable=True)  # HH:MM
+    dinner_time = Column(String, nullable=True)  # HH:MM
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

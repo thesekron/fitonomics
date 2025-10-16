@@ -15,5 +15,6 @@ class User(Base):
     weight = Column(Integer, nullable=True)  # kg
     budget = Column(String, nullable=True)  # low/mid/high
     reminder_time = Column(String, nullable=True)  # morning/day/evening
+    reminders_enabled = Column(String, default="true")  # true/false
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

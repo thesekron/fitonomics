@@ -14,11 +14,30 @@ from app.database import SessionLocal
 from app.models.user import User
 from app.models.user_settings import UserSettings
 from app.models.meal_log import UserMealSettings
+from app.models.notification_log import NotificationLog
 from app.services.i18n import t
 from app.services.sleep_tips import EVENING_REMINDER_TIME, MORNING_REMINDER_TIME
 
 
 logger = logging.getLogger(__name__)
+
+def log_notification(user_id: int, notification_type: str, action: str = None):
+    """Log notification to database."""
+    try:
+        with SessionLocal() as session:
+            from datetime import datetime
+            log_entry = NotificationLog(
+                user_id=user_id,
+                notification_type=notification_type,
+                sent_at=datetime.now(),
+                responded=action is not None,
+                action=action,
+                created_at=datetime.now()
+            )
+            session.add(log_entry)
+            session.commit()
+    except Exception as e:
+        logger.error("Failed to log notification: %s", e)
 
 _scheduler: Optional[BackgroundScheduler] = None
 _bot_instance = None
@@ -50,6 +69,15 @@ _TIME_MAP = {
 }
 
 
+def _get_user_language(user_id: int) -> str:
+    """Get user's language from database."""
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.tg_id == user_id).first()
+        if user:
+            return user.language or "ru"
+        return "ru"
+
+
 def _reminder_job(user_id: int) -> None:
     if not _bot_instance:
         logger.warning("Bot instance not set, cannot send workout reminder")
@@ -64,7 +92,15 @@ def _reminder_job(user_id: int) -> None:
         kb.button(text=t(lang, "btn_start_workout"), callback_data="w:start_workout")
         kb.adjust(1)
         text = f"{t(lang, 'notif.workout.line1')}\n{t(lang, 'notif.workout.line2')}"
-        _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.create_task(_bot_instance.send_message(user_id, text, reply_markup=kb.as_markup()))
+            else:
+                loop.run_until_complete(_bot_instance.send_message(user_id, text, reply_markup=kb.as_markup()))
+        except Exception as e:
+            logger.error("Failed to send workout reminder to user_id=%s: %s", user_id, e)
         logger.info("Sent workout reminder to user_id=%s", user_id)
     except Exception as e:
         logger.error("Failed to send workout reminder to user_id=%s: %s", user_id, e)
@@ -90,7 +126,34 @@ def _sleep_evening_job(user_id: int) -> None:
         text = t(lang, "sleep.evening_reminder")
         
         try:
-            _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
+            import requests
+            import json
+            
+            # Get bot token from environment
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            bot_token = os.getenv("BOT_TOKEN")
+            
+            if not bot_token:
+                logger.error("BOT_TOKEN not found in environment")
+                return
+                
+            # Send message directly via Telegram API
+            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            data = {
+                "chat_id": user_id,
+                "text": text,
+                "reply_markup": json.dumps(kb.as_markup().model_dump())
+            }
+            
+            response = requests.post(url, data=data, timeout=10)
+            if response.status_code == 200:
+                logger.info("Sent workout reminder to user_id=%s", user_id)
+            else:
+                logger.error("Failed to send workout reminder: %s", response.text)
+        except Exception as e:
+            logger.error("Failed to send workout reminder to user_id=%s: %s", user_id, e)
             logger.info("Sent sleep evening notification to user_id=%s", user_id)
         except Exception as e:
             logger.error("Failed to send sleep evening notification to user_id=%s: %s", user_id, e)
@@ -117,7 +180,34 @@ def _sleep_morning_job(user_id: int) -> None:
         text = t(lang, "sleep.morning_reminder")
         
         try:
-            _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
+            import requests
+            import json
+            
+            # Get bot token from environment
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            bot_token = os.getenv("BOT_TOKEN")
+            
+            if not bot_token:
+                logger.error("BOT_TOKEN not found in environment")
+                return
+                
+            # Send message directly via Telegram API
+            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            data = {
+                "chat_id": user_id,
+                "text": text,
+                "reply_markup": json.dumps(kb.as_markup().model_dump())
+            }
+            
+            response = requests.post(url, data=data, timeout=10)
+            if response.status_code == 200:
+                logger.info("Sent workout reminder to user_id=%s", user_id)
+            else:
+                logger.error("Failed to send workout reminder: %s", response.text)
+        except Exception as e:
+            logger.error("Failed to send workout reminder to user_id=%s: %s", user_id, e)
             logger.info("Sent sleep morning notification to user_id=%s", user_id)
         except Exception as e:
             logger.error("Failed to send sleep morning notification to user_id=%s: %s", user_id, e)
@@ -150,8 +240,10 @@ def load_and_schedule_all() -> None:
         for s in settings:
             try:
                 schedule_sleep_notifications(s.user_id, s.sleep_time, s.wake_time)
+                # Also schedule meal reminders for this user
+                schedule_meal_reminders(s.user_id)
             except Exception as exc:
-                logger.exception("Failed to schedule sleep for user_id=%s: %s", s.user_id, exc)
+                logger.exception("Failed to schedule sleep/meals for user_id=%s: %s", s.user_id, exc)
 
 
 def schedule_sleep_notifications(user_id: int, sleep_time: str | None, wake_time: str | None) -> None:
@@ -195,15 +287,14 @@ def schedule_sleep_notifications(user_id: int, sleep_time: str | None, wake_time
         logger.info("Scheduled sleep-morning for user=%s at %02d:%02d", user_id, hour, minute)
 
 
-# Meal reminder functions
-async def _meal_breakfast_job(user_id: int):
+# Meal reminder functions - connected to new reminder system
+def _meal_breakfast_job(user_id: int):
     """Send breakfast reminder."""
     if not _bot_instance:
         return
     
     lang = _get_user_language(user_id)
-    text = f"☀️ {t(lang, 'meals.reminder.breakfast')}\n\n"
-    text += f"{t(lang, 'meals.reminder.question')}"
+    text = f"☀️ {t(lang, 'meals.reminder.breakfast')}"
     
     kb = InlineKeyboardBuilder()
     kb.button(text=t(lang, "meals.reminder.mark_now"), callback_data="meals:reminder:breakfast")
@@ -211,20 +302,61 @@ async def _meal_breakfast_job(user_id: int):
     kb.adjust(1)
     
     try:
-        await _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
-        logger.info("Sent breakfast reminder to user=%s", user_id)
+        import requests
+        import json
+        
+        # Get bot token from environment
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        bot_token = os.getenv("BOT_TOKEN")
+        
+        if not bot_token:
+            logger.error("BOT_TOKEN not found in environment")
+            return
+            
+        # Send message directly via Telegram API
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # Convert keyboard to proper format
+        keyboard_data = kb.as_markup().model_dump()
+        # Clean up the keyboard data to avoid parsing errors
+        inline_keyboard = keyboard_data.get("inline_keyboard", [])
+        
+        # Remove null values from buttons
+        clean_keyboard = []
+        for row in inline_keyboard:
+            clean_row = []
+            for button in row:
+                clean_button = {k: v for k, v in button.items() if v is not None}
+                clean_row.append(clean_button)
+            clean_keyboard.append(clean_row)
+        
+        keyboard_data = {"inline_keyboard": clean_keyboard}
+        
+        data = {
+            "chat_id": user_id,
+            "text": text,
+            "reply_markup": json.dumps(keyboard_data)
+        }
+        
+        response = requests.post(url, data=data, timeout=10)
+        if response.status_code == 200:
+            logger.info("Sent breakfast reminder to user=%s", user_id)
+            log_notification(user_id, "breakfast")
+        else:
+            logger.error("Failed to send breakfast reminder: %s", response.text)
     except Exception as e:
         logger.error("Failed to send breakfast reminder to user=%s: %s", user_id, e)
 
 
-async def _meal_lunch_job(user_id: int):
+def _meal_lunch_job(user_id: int):
     """Send lunch reminder."""
     if not _bot_instance:
         return
     
     lang = _get_user_language(user_id)
-    text = f"☀️ {t(lang, 'meals.reminder.lunch')}\n\n"
-    text += f"{t(lang, 'meals.reminder.question')}"
+    text = f"☀️ {t(lang, 'meals.reminder.lunch')}"
     
     kb = InlineKeyboardBuilder()
     kb.button(text=t(lang, "meals.reminder.mark_now"), callback_data="meals:reminder:lunch")
@@ -232,20 +364,61 @@ async def _meal_lunch_job(user_id: int):
     kb.adjust(1)
     
     try:
-        await _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
-        logger.info("Sent lunch reminder to user=%s", user_id)
+        import requests
+        import json
+        
+        # Get bot token from environment
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        bot_token = os.getenv("BOT_TOKEN")
+        
+        if not bot_token:
+            logger.error("BOT_TOKEN not found in environment")
+            return
+            
+        # Send message directly via Telegram API
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # Convert keyboard to proper format
+        keyboard_data = kb.as_markup().model_dump()
+        # Clean up the keyboard data to avoid parsing errors
+        inline_keyboard = keyboard_data.get("inline_keyboard", [])
+        
+        # Remove null values from buttons
+        clean_keyboard = []
+        for row in inline_keyboard:
+            clean_row = []
+            for button in row:
+                clean_button = {k: v for k, v in button.items() if v is not None}
+                clean_row.append(clean_button)
+            clean_keyboard.append(clean_row)
+        
+        keyboard_data = {"inline_keyboard": clean_keyboard}
+        
+        data = {
+            "chat_id": user_id,
+            "text": text,
+            "reply_markup": json.dumps(keyboard_data)
+        }
+        
+        response = requests.post(url, data=data, timeout=10)
+        if response.status_code == 200:
+            logger.info("Sent lunch reminder to user=%s", user_id)
+            log_notification(user_id, "lunch")
+        else:
+            logger.error("Failed to send lunch reminder: %s", response.text)
     except Exception as e:
         logger.error("Failed to send lunch reminder to user=%s: %s", user_id, e)
 
 
-async def _meal_dinner_job(user_id: int):
+def _meal_dinner_job(user_id: int):
     """Send dinner reminder."""
     if not _bot_instance:
         return
     
     lang = _get_user_language(user_id)
-    text = f"🌙 {t(lang, 'meals.reminder.dinner')}\n\n"
-    text += f"{t(lang, 'meals.reminder.question')}"
+    text = f"🌙 {t(lang, 'meals.reminder.dinner')}"
     
     kb = InlineKeyboardBuilder()
     kb.button(text=t(lang, "meals.reminder.mark_now"), callback_data="meals:reminder:dinner")
@@ -253,56 +426,123 @@ async def _meal_dinner_job(user_id: int):
     kb.adjust(1)
     
     try:
-        await _bot_instance.send_message(user_id, text, reply_markup=kb.as_markup())
-        logger.info("Sent dinner reminder to user=%s", user_id)
+        import requests
+        import json
+        
+        # Get bot token from environment
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        bot_token = os.getenv("BOT_TOKEN")
+        
+        if not bot_token:
+            logger.error("BOT_TOKEN not found in environment")
+            return
+            
+        # Send message directly via Telegram API
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # Convert keyboard to proper format
+        keyboard_data = kb.as_markup().model_dump()
+        # Clean up the keyboard data to avoid parsing errors
+        inline_keyboard = keyboard_data.get("inline_keyboard", [])
+        
+        # Remove null values from buttons
+        clean_keyboard = []
+        for row in inline_keyboard:
+            clean_row = []
+            for button in row:
+                clean_button = {k: v for k, v in button.items() if v is not None}
+                clean_row.append(clean_button)
+            clean_keyboard.append(clean_row)
+        
+        keyboard_data = {"inline_keyboard": clean_keyboard}
+        
+        data = {
+            "chat_id": user_id,
+            "text": text,
+            "reply_markup": json.dumps(keyboard_data)
+        }
+        
+        response = requests.post(url, data=data, timeout=10)
+        if response.status_code == 200:
+            logger.info("Sent dinner reminder to user=%s", user_id)
+            log_notification(user_id, "dinner")
+        else:
+            logger.error("Failed to send dinner reminder: %s", response.text)
     except Exception as e:
         logger.error("Failed to send dinner reminder to user=%s: %s", user_id, e)
 
 
 def schedule_meal_reminders(user_id: int):
-    """Schedule meal reminders for user."""
+    """Schedule meal reminders for user based on their settings."""
     with SessionLocal() as session:
-        settings = session.query(UserMealSettings).filter(UserMealSettings.user_id == user_id).first()
+        user = session.query(User).filter(User.tg_id == user_id).first()
+        if not user:
+            return
+        
+        settings = session.query(UserSettings).filter(UserSettings.user_id == user.tg_id).first()
         if not settings:
             return
     
     scheduler = get_scheduler()
     
     # Remove existing meal reminders
-    scheduler.remove_job(f"meal_breakfast:{user_id}", ignore_errors=True)
-    scheduler.remove_job(f"meal_lunch:{user_id}", ignore_errors=True)
-    scheduler.remove_job(f"meal_dinner:{user_id}", ignore_errors=True)
+    try:
+        scheduler.remove_job(f"meal_breakfast:{user_id}")
+    except:
+        pass
+    try:
+        scheduler.remove_job(f"meal_lunch:{user_id}")
+    except:
+        pass
+    try:
+        scheduler.remove_job(f"meal_dinner:{user_id}")
+    except:
+        pass
     
-    # Schedule new reminders
-    if settings.breakfast_reminder:
-        scheduler.add_job(
-            _meal_breakfast_job,
-            trigger=CronTrigger(hour=8, minute=0),  # 8:00 AM
-            id=f"meal_breakfast:{user_id}",
-            replace_existing=True,
-            kwargs={"user_id": user_id},
-        )
-        logger.info("Scheduled breakfast reminder for user=%s", user_id)
+    # Schedule new reminders based on user settings
+    if settings.breakfast_time:
+        try:
+            hour, minute = map(int, settings.breakfast_time.split(':'))
+            scheduler.add_job(
+                _meal_breakfast_job,
+                trigger=CronTrigger(hour=hour, minute=minute),
+                id=f"meal_breakfast:{user_id}",
+                replace_existing=True,
+                kwargs={"user_id": user_id},
+            )
+            logger.info("Scheduled breakfast reminder for user=%s at %02d:%02d", user_id, hour, minute)
+        except Exception as e:
+            logger.error("Failed to schedule breakfast reminder for user=%s: %s", user_id, e)
     
-    if settings.lunch_reminder:
-        scheduler.add_job(
-            _meal_lunch_job,
-            trigger=CronTrigger(hour=13, minute=0),  # 1:00 PM
-            id=f"meal_lunch:{user_id}",
-            replace_existing=True,
-            kwargs={"user_id": user_id},
-        )
-        logger.info("Scheduled lunch reminder for user=%s", user_id)
+    if settings.lunch_time:
+        try:
+            hour, minute = map(int, settings.lunch_time.split(':'))
+            scheduler.add_job(
+                _meal_lunch_job,
+                trigger=CronTrigger(hour=hour, minute=minute),
+                id=f"meal_lunch:{user_id}",
+                replace_existing=True,
+                kwargs={"user_id": user_id},
+            )
+            logger.info("Scheduled lunch reminder for user=%s at %02d:%02d", user_id, hour, minute)
+        except Exception as e:
+            logger.error("Failed to schedule lunch reminder for user=%s: %s", user_id, e)
     
-    if settings.dinner_reminder:
-        scheduler.add_job(
-            _meal_dinner_job,
-            trigger=CronTrigger(hour=19, minute=0),  # 7:00 PM
-            id=f"meal_dinner:{user_id}",
-            replace_existing=True,
-            kwargs={"user_id": user_id},
-        )
-        logger.info("Scheduled dinner reminder for user=%s", user_id)
+    if settings.dinner_time:
+        try:
+            hour, minute = map(int, settings.dinner_time.split(':'))
+            scheduler.add_job(
+                _meal_dinner_job,
+                trigger=CronTrigger(hour=hour, minute=minute),
+                id=f"meal_dinner:{user_id}",
+                replace_existing=True,
+                kwargs={"user_id": user_id},
+            )
+            logger.info("Scheduled dinner reminder for user=%s at %02d:%02d", user_id, hour, minute)
+        except Exception as e:
+            logger.error("Failed to schedule dinner reminder for user=%s: %s", user_id, e)
 
 
 

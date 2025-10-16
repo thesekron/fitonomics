@@ -7,7 +7,9 @@ from datetime import datetime, timedelta
 
 from app.database import SessionLocal
 from app.models.user import User
+from app.models.user_settings import UserSettings
 from app.models.sleep_log import SleepLog
+from app.models.notification_log import NotificationLog
 from app.services.i18n import t, T
 from app.services.progress import get_comprehensive_progress_stats
 from .start import router
@@ -35,7 +37,7 @@ def _details_kb(lang: str) -> types.InlineKeyboardMarkup:
         ],
         [
             types.InlineKeyboardButton(text=t(lang, "progress.details.meals"), callback_data="progress:details:meals"),
-            types.InlineKeyboardButton(text=t(lang, "progress.details.weight"), callback_data="progress:details:weight")
+            types.InlineKeyboardButton(text=t(lang, "progress.details.notifications"), callback_data="progress:details:notifications")
         ]
     ])
 
@@ -157,6 +159,28 @@ async def show_progress_summary(message: types.Message):
     text += f"   • {t(lang, 'progress.meals.healthiness')}: {meals['healthiness_percentage']}%\n"
     text += f"   • {t(lang, 'progress.meals.custom')}: {meals['custom_meals']}\n"
     
+    # Notifications summary
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.tg_id == message.from_user.id).first()
+        if user:
+            reminders_enabled = getattr(user, 'reminders_enabled', True)
+            workout_time = user.reminder_time or 'morning'
+            
+            # Get user settings for meal times
+            settings = session.query(UserSettings).filter(UserSettings.user_id == user.tg_id).first()
+            breakfast_time = settings.breakfast_time if settings else '08:00'
+            lunch_time = settings.lunch_time if settings else '13:00'
+            dinner_time = settings.dinner_time if settings else '19:00'
+            sleep_time = settings.sleep_time if settings else '22:00'
+    
+    text += f"\n🔔 {t(lang, 'progress.details.notifications')}:\n"
+    text += f"   • {t(lang, 'progress.details.notifications.status')}: {'✅ ' + t(lang, 'progress.details.notifications.enabled') if reminders_enabled else '❌ ' + t(lang, 'progress.details.notifications.disabled')}\n"
+    text += f"   • {t(lang, 'progress.details.notifications.workout')}: {workout_time}\n"
+    text += f"   • {t(lang, 'progress.details.notifications.breakfast')}: {breakfast_time}\n"
+    text += f"   • {t(lang, 'progress.details.notifications.lunch')}: {lunch_time}\n"
+    text += f"   • {t(lang, 'progress.details.notifications.dinner')}: {dinner_time}\n"
+    text += f"   • {t(lang, 'progress.details.notifications.sleep')}: {sleep_time}\n"
+    
     await message.answer(text, reply_markup=_details_kb(lang))
 
 
@@ -248,13 +272,50 @@ async def show_details(call: types.CallbackQuery):
         text += f"   • {t(lang, 'progress.details.meals.healthiness')}: {meals['healthiness_percentage']}%\n"
         text += f"   • {t(lang, 'progress.details.meals.custom')}: {meals['custom_meals']}\n"
     
-    elif detail_type == "weight":
-        user = stats["user"]
-        if user.weight:
-            text += f"📊 {t(lang, 'progress.details.weight.current')}: {user.weight} kg\n"
-            # TODO: Add weight tracking history when implemented
-        else:
-            text += t(lang, "progress.details.weight.no_data")
+    elif detail_type == "notifications":
+        # Get notification statistics
+        with SessionLocal() as session:
+            user = session.query(User).filter(User.tg_id == call.from_user.id).first()
+            if user:
+                reminders_enabled = getattr(user, 'reminders_enabled', True)
+                
+                # Get notification statistics from logs
+                notification_logs = session.query(NotificationLog).filter(
+                    NotificationLog.user_id == user.tg_id
+                ).all()
+                
+                # Count by type and action
+                stats = {
+                    'workout': {'sent': 0, 'responded': 0, 'skipped': 0},
+                    'breakfast': {'sent': 0, 'responded': 0, 'skipped': 0},
+                    'lunch': {'sent': 0, 'responded': 0, 'skipped': 0},
+                    'dinner': {'sent': 0, 'responded': 0, 'skipped': 0},
+                    'sleep': {'sent': 0, 'responded': 0, 'skipped': 0}
+                }
+                
+                for log in notification_logs:
+                    if log.notification_type in stats:
+                        stats[log.notification_type]['sent'] += 1
+                        if log.responded:
+                            stats[log.notification_type]['responded'] += 1
+                        if log.action == 'skipped':
+                            stats[log.notification_type]['skipped'] += 1
+        
+        text += f"📊 {t(lang, 'progress.details.notifications.summary')}:\n"
+        status_text = t(lang, 'reminders.enabled') if reminders_enabled else t(lang, 'reminders.disabled')
+        text += f"   • {t(lang, 'progress.details.notifications.status')}: {'✅ ' + status_text if reminders_enabled else '❌ ' + status_text}\n\n"
+        
+        # Show statistics for each notification type
+        for notif_type in ['workout', 'breakfast', 'lunch', 'dinner', 'sleep']:
+            type_name = t(lang, f'progress.details.notifications.{notif_type}')
+            sent = stats[notif_type]['sent']
+            responded = stats[notif_type]['responded']
+            skipped = stats[notif_type]['skipped']
+            
+            text += f"   • {type_name}:\n"
+            text += f"     - {t(lang, 'progress.details.notifications.sent')}: {sent}\n"
+            text += f"     - {t(lang, 'progress.details.notifications.responded')}: {responded}\n"
+            text += f"     - {t(lang, 'progress.details.notifications.skipped')}: {skipped}\n"
     
     await call.message.edit_text(text, reply_markup=_details_kb(lang))
     await call.answer()

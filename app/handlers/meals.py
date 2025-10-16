@@ -504,7 +504,7 @@ async def back_to_menu(call: types.CallbackQuery):
     await call.message.answer(t(lang, "menu.welcome"), reply_markup=kb)
 
 
-# Meal reminder handlers
+# Meal reminder handlers - connected to new reminder system
 @router.callback_query(F.data.startswith("meals:reminder:"))
 async def handle_meal_reminder(call: types.CallbackQuery):
     """Handle meal reminder button clicks."""
@@ -519,7 +519,8 @@ async def handle_meal_reminder(call: types.CallbackQuery):
     meal_type = action  # breakfast, lunch, or dinner
     
     # Show quick meal logging interface
-    text = f"{t(lang, 'meals.reminder.quick_log')}\n\n{t(lang, 'meals.category.' + meal_type)}"
+    category_text = t(lang, f'meals.category.{meal_type}')
+    text = f"{t(lang, 'meals.reminder.quick_log')}\n\n{category_text}"
     
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=t(lang, "meals.reminder.quick_pack"), callback_data=f"meals:quick_pack:{meal_type}")],
@@ -527,9 +528,13 @@ async def handle_meal_reminder(call: types.CallbackQuery):
         [InlineKeyboardButton(text=t(lang, "meals.reminder.skip"), callback_data="meals:reminder:skip")]
     ])
     
-    if call.message.text:
-        await call.message.edit_text(text, reply_markup=kb)
-    else:
+    try:
+        if call.message.text:
+            await call.message.edit_text(text, reply_markup=kb)
+        else:
+            await call.message.answer(text, reply_markup=kb)
+    except Exception as e:
+        # If edit fails (e.g., same content), just send new message
         await call.message.answer(text, reply_markup=kb)
 
 
@@ -549,18 +554,27 @@ async def quick_pack_selection(call: types.CallbackQuery):
         await call.answer(t(lang, "meals.no_packs"))
         return
     
-    # Show first 3 packs for quick selection
-    quick_packs = packs[:3]
+    # Show all packs for quick selection
     text = f"{t(lang, 'meals.reminder.quick_select')}\n\n"
     
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"📦 {pack['pack_number']}: {pack.get(f'name_{lang}', pack.get('name_en', 'Unknown'))}", callback_data=f"meals:quick_done:{pack['id']}")]
-        for pack in quick_packs
-    ] + [[InlineKeyboardButton(text=t(lang, "menu.back"), callback_data=f"meals:reminder:{meal_type}")]])
+    # Create keyboard with all packs (max 10 per page)
+    kb_rows = []
+    for pack in packs:
+        pack_name = pack.get(f'name_{lang}', pack.get('name_en', 'Unknown'))
+        kb_rows.append([InlineKeyboardButton(text=f"📦 {pack['pack_number']}: {pack_name}", callback_data=f"meals:quick_done:{pack['id']}")])
     
-    if call.message.text:
-        await call.message.edit_text(text, reply_markup=kb)
-    else:
+    # Add back button
+    kb_rows.append([InlineKeyboardButton(text=t(lang, "menu.back"), callback_data=f"meals:reminder:{meal_type}")])
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+    
+    try:
+        if call.message.text:
+            await call.message.edit_text(text, reply_markup=kb)
+        else:
+            await call.message.answer(text, reply_markup=kb)
+    except Exception as e:
+        # If edit fails (e.g., same content), just send new message
         await call.message.answer(text, reply_markup=kb)
 
 
@@ -579,6 +593,10 @@ async def quick_pack_done(call: types.CallbackQuery):
         # Log the meal
         try:
             log_meal_pack(call.from_user.id, pack_id, pack.get('category', 'unknown'))
+            
+            # Log notification response
+            from app.services.reminders import log_notification
+            log_notification(call.from_user.id, pack.get('category', 'unknown'), 'logged')
         except Exception as e:
             print(f"Error logging meal in reminder: {e}")
             # Continue anyway
@@ -629,3 +647,28 @@ async def quick_custom_meal(call: types.CallbackQuery, state: FSMContext):
         await call.message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text=t(lang, "menu.back"), callback_data=f"meals:reminder:{meal_type}")]
         ]))
+
+
+@router.callback_query(F.data == "meals:reminder:skip")
+async def skip_meal_reminder(call: types.CallbackQuery):
+    """Skip meal reminder."""
+    lang = get_lang(call.from_user.id)
+    
+    # Log notification response
+    try:
+        from app.services.reminders import log_notification
+        # Determine meal type from callback data or message text
+        meal_type = "unknown"
+        if "breakfast" in call.message.text.lower():
+            meal_type = "breakfast"
+        elif "lunch" in call.message.text.lower():
+            meal_type = "lunch"
+        elif "dinner" in call.message.text.lower():
+            meal_type = "dinner"
+        
+        log_notification(call.from_user.id, meal_type, 'skipped')
+    except Exception as e:
+        print(f"Error logging skip: {e}")
+    
+    await call.answer(t(lang, "meals.reminder.skipped"))
+    await call.message.delete()
