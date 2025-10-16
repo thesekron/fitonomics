@@ -157,6 +157,7 @@
                 <button class="btn btn-primary" onclick="checkHealth()">🔄 Обновить статус</button>
                 <button class="btn btn-success" onclick="startBot()">▶️ Запустить бота</button>
                 <button class="btn btn-danger" onclick="stopBot()">⏹️ Остановить бота</button>
+                <button class="btn btn-warning" onclick="showDebug()">🐛 Отладка</button>
                 <a href="/admin" class="btn btn-primary">⚙️ Админ панель</a>
             </div>
         </div>
@@ -172,14 +173,25 @@
                 const statusDiv = document.getElementById('status');
                 if (data.status === 'running') {
                     statusDiv.className = 'status running';
-                    statusDiv.textContent = '✅ Бот работает нормально';
+                    statusDiv.textContent = `✅ Бот работает нормально (токен: ${data.token})`;
                 } else {
                     statusDiv.className = 'status error';
-                    statusDiv.textContent = '❌ Ошибка: ' + (data.message || 'Неизвестная ошибка');
+                    statusDiv.textContent = `❌ Ошибка: ${data.message || 'Неизвестная ошибка'} (токен: ${data.token}, running: ${data.bot_running})`;
                 }
             } catch (error) {
                 document.getElementById('status').className = 'status error';
                 document.getElementById('status').textContent = '❌ Ошибка подключения';
+            }
+        }
+        
+        // Отладочная информация
+        async function showDebug() {
+            try {
+                const response = await fetch('/debug');
+                const data = await response.json();
+                alert(`Отладка:\nТокен: ${data.token_preview}\nБот существует: ${data.bot_exists}\nБот запущен: ${data.bot_running}\nПоток активен: ${data.thread_alive}`);
+            } catch (error) {
+                alert('Ошибка получения отладочной информации: ' + error.message);
             }
         }
         
