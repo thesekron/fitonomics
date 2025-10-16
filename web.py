@@ -56,8 +56,18 @@ def run_bot():
         
         bot_running = True
         
-        # Запускаем бота
-        asyncio.run(dp.start_polling(bot))
+        # Запускаем бота в бесконечном цикле
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            loop.run_until_complete(dp.start_polling(bot))
+        except KeyboardInterrupt:
+            logging.info("Бот остановлен пользователем")
+        except Exception as e:
+            logging.error(f"Ошибка в работе бота: {e}")
+        finally:
+            bot_running = False
         
     except Exception as e:
         logging.error(f"Ошибка запуска бота: {e}")
@@ -157,8 +167,16 @@ def debug():
     })
 
 if __name__ == '__main__':
-    # НЕ запускаем бота автоматически при старте Flask
-    # Пользователь должен нажать кнопку "Запустить бота"
+    # Автоматически запускаем бота при старте (для Render)
+    if TOKEN:
+        logging.info("Автоматический запуск бота...")
+        bot_thread = threading.Thread(target=run_bot, daemon=False)
+        bot_thread.start()
+        # Ждем немного чтобы бот успел запуститься
+        import time
+        time.sleep(3)
+    else:
+        logging.warning("BOT_TOKEN не найден, бот не будет запущен автоматически")
     
     # Запускаем Flask сервер
     app.run(host='0.0.0.0', port=5000, debug=False)
